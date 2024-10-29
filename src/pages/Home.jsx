@@ -36,7 +36,7 @@ navigate(`/editor/${roomId}`,{
     <>
    
     <div
-      className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8"
+      className="flex h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8"
       style={{ backgroundColor: "black" }}
     >
       <div
@@ -115,8 +115,8 @@ navigate(`/editor/${roomId}`,{
           </a>
         </p>
       </div>
-    </div>
     <Footer></Footer>
+    </div>
     </>
   );
 };

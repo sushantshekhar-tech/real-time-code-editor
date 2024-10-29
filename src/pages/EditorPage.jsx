@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Clients from '../component/Clients';
+import Editor from '../component/Editor';
 
 const EditorPage = () => {
   const [clients, setClients] = useState([
@@ -42,12 +43,8 @@ const EditorPage = () => {
       </aside>
 
       {/* Editor Section */}
-      <main className="flex-grow flex items-center justify-center">
-        <textarea
-          className="w-full h-full bg-[#1a1c2c] p-4 text-gray-300 outline-none"
-          placeholder=""
-        ></textarea>
-      </main>
+     
+        <Editor/>
     </div>
   );
 };

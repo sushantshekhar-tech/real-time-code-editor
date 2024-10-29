@@ -3,10 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@codemirror/autocomplete": "^6.18.1",
+    "@codemirror/commands": "^6.7.1",
+    "@codemirror/lang-html": "^6.4.9",
+    "@codemirror/lang-javascript": "^6.2.2",
+    "@codemirror/matchbrackets": "^0.19.4",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@codemirror/view": "^6.34.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "code-editor": "file:",
+    "express": "^4.21.1",
     "react": "^18.3.1",
     "react-avatar": "^5.0.3",
     "react-dom": "^18.3.1",
@@ -14,12 +23,16 @@
     "react-router": "^6.27.0",
     "react-router-dom": "^6.27.0",
     "react-scripts": "5.0.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "uuid": "^11.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "server:dev": "nodemon server.js",
+    "server:prod": "node server.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -42,6 +55,7 @@
     ]
   },
   "devDependencies": {
+    "nodemon": "^3.1.7",
     "tailwindcss": "^3.4.14"
   }
 }

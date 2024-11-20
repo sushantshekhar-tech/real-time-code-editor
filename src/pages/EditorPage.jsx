@@ -1,15 +1,77 @@
-import React, { useState } from 'react';
-import Clients from '../component/Clients';
-import Editor from '../component/Editor';
+import React, { useState, useRef, useEffect } from "react";
+import Clients from "../component/Clients";
+import Editor from "../component/Editor";
+import { initSocket } from "../socket";
+import ACTIONS from "../Actions";
+import {
+  useLocation,
+  useNavigate,
+  Navigate,
+  useParams,
+} from "react-router-dom";
+import toast from "react-hot-toast";
 
 const EditorPage = () => {
-  const [clients, setClients] = useState([
-    { socketId: 1, username: 'S shekhar' },
-    { socketId: 2, username: 'O Wagisha' },
-    { socketId: 3, username: 'B Ghosh' },
-    { socketId: 4, username: 'H Kaur' },
-    { socketId: 5, username: 'S Iram' },
-  ]);
+  const reactNavigator = useNavigate();
+  const socketRef = useRef(null);
+  const location = useLocation();
+  const { roomId } = useParams();
+  const [clients, setClients] = useState([]);
+
+  useEffect(() => {
+    const init = async () => {
+      socketRef.current = await initSocket();
+      //if connections fails or user unable to connect
+      socketRef.current.on("connect_error", (err) => handleErrors(err));
+      socketRef.current.on("connect_failed", (err) => handleErrors(err));
+      //function to handle errors
+
+      const handleErrors = (e) => {
+        console.log("socket error", e);
+        toast.error("Socket connection failed , try again later.");
+        reactNavigator("/");
+      };
+
+      socketRef.current.emit(ACTIONS.JOIN, {
+        roomId,
+        username: location.state?.userName,
+      });
+
+      //Listening for joined event
+      socketRef.current.on(
+        ACTIONS.JOINED,
+        ({ clients, username, socketId }) => {
+          if (username !== location.state?.userName) {
+            toast.success(`${username} joined the room.`);
+            // console.log(`${username} joined`);
+            setClients(clients);
+          }
+        }
+      );
+
+      //Listening for disconnected
+      socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
+        toast.success(`${username} left the room`);
+        setClients((prev) => {
+          return prev.filter((client) => client.socketId !== socketId);
+        });
+      });
+    };
+    init();
+
+    //cleaning function
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.off(ACTIONS.JOINED);
+        socketRef.current.off(ACTIONS.DISCONNECTED);
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  if (!location.state) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <div className="flex min-h-screen bg-[#1a1c2c] text-gray-300">
@@ -19,7 +81,7 @@ const EditorPage = () => {
           <div className="flex items-center mb-6">
             {/* Replace with actual logo if you have one */}
             <div className="bg-green-500 p-2 rounded-full mr-2">
-              <span className="text-white font-bold">Code Sync</span>
+              <span className="text-white font-bold">Sushant code Editor</span>
             </div>
           </div>
           <div className="text-sm mb-8 overflow-y-auto flex-grow">
@@ -43,8 +105,8 @@ const EditorPage = () => {
       </aside>
 
       {/* Editor Section */}
-     
-        <Editor/>
+
+      <Editor />
     </div>
   );
 };

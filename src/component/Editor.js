@@ -6,6 +6,10 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { defaultKeymap } from '@codemirror/commands';
 
 const Editor = () => {
+
+
+
+
   const editorRef = useRef(null);
   const [output, setOutput] = useState(''); // State to hold terminal output
 
@@ -47,6 +51,11 @@ const Editor = () => {
     } finally {
       console.log = log; // Restore the original console.log
     }
+
+
+    editorRef.current.on('change',(instance,changes)=>{
+      console.log('changes',changes)
+    })
   };
 
   return (

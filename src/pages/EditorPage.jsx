@@ -20,46 +20,50 @@ const EditorPage = () => {
 
   useEffect(() => {
     const init = async () => {
-      socketRef.current = await initSocket();
-      //if connections fails or user unable to connect
-      socketRef.current.on("connect_error", (err) => handleErrors(err));
-      socketRef.current.on("connect_failed", (err) => handleErrors(err));
-      //function to handle errors
+      try {
+        // Initialize the socket connection
+        socketRef.current = await initSocket();
 
-      const handleErrors = (e) => {
-        console.log("socket error", e);
-        toast.error("Socket connection failed , try again later.");
-        reactNavigator("/");
-      };
+        // Handle connection errors
+        const handleErrors = (err) => {
+          console.error("Socket error:", err);
+          toast.error("Socket connection failed. Please try again later.");
+          reactNavigator("/");
+        };
 
-      socketRef.current.emit(ACTIONS.JOIN, {
-        roomId,
-        username: location.state?.userName,
-      });
+        socketRef.current.on("connect_error", handleErrors);
+        socketRef.current.on("connect_failed", handleErrors);
 
-      //Listening for joined event
-      socketRef.current.on(
-        ACTIONS.JOINED,
-        ({ clients, username, socketId }) => {
+        // Emit JOIN event to the server
+        socketRef.current.emit(ACTIONS.JOIN, {
+          roomId,
+          username: location.state?.userName,
+        });
+
+        // Listen for the JOINED event
+        socketRef.current.on(ACTIONS.JOINED, ({ clients, username }) => {
           if (username !== location.state?.userName) {
             toast.success(`${username} joined the room.`);
-            // console.log(`${username} joined`);
-            setClients(clients);
           }
-        }
-      );
-
-      //Listening for disconnected
-      socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
-        toast.success(`${username} left the room`);
-        setClients((prev) => {
-          return prev.filter((client) => client.socketId !== socketId);
+          setClients(clients);
         });
-      });
+
+        // Listen for the DISCONNECTED event
+        socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
+          toast.success(`${username} left the room.`);
+          setClients((prev) =>
+            prev.filter((client) => client.socketId !== socketId)
+          );
+        });
+      } catch (err) {
+        console.error("Error initializing socket:", err);
+        toast.error("Unable to initialize connection.");
+      }
     };
+
     init();
 
-    //cleaning function
+    // Cleanup on component unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.off(ACTIONS.JOINED);
@@ -67,8 +71,9 @@ const EditorPage = () => {
         socketRef.current.disconnect();
       }
     };
-  }, []);
+  }, [roomId, location.state, reactNavigator]);
 
+  // Redirect if location state is missing
   if (!location.state) {
     return <Navigate to="/" />;
   }
@@ -78,15 +83,16 @@ const EditorPage = () => {
       {/* Sidebar */}
       <aside className="w-64 bg-[#141629] p-6 flex flex-col justify-between">
         <div className="flex flex-col h-full">
+          {/* Logo Section */}
           <div className="flex items-center mb-6">
-            {/* Replace with actual logo if you have one */}
             <div className="bg-green-500 p-2 rounded-full mr-2">
-              <span className="text-white font-bold">Sushant code Editor</span>
+              <span className="text-white font-bold">Sushant Code Editor</span>
             </div>
           </div>
+
+          {/* Connected Clients */}
           <div className="text-sm mb-8 overflow-y-auto flex-grow">
             <h2 className="mb-4">Connected</h2>
-            {/* Grid layout for two clients per row */}
             <div className="grid grid-cols-2 gap-4">
               {clients.map(({ socketId, username }) => (
                 <Clients key={socketId} username={username} />
@@ -94,18 +100,28 @@ const EditorPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Sidebar Buttons */}
         <div className="flex flex-row space-x-4">
-          <button className="bg-green-700 text-sm py-2 px-3 rounded text-white">
+          <button
+            className="bg-green-700 text-sm py-2 px-3 rounded text-white"
+            onClick={() => {
+              navigator.clipboard.writeText(roomId);
+              toast.success("Room ID copied to clipboard.");
+            }}
+          >
             Copy ROOM ID
           </button>
-          <button className="bg-gray-700 text-sm py-2 px-3 rounded text-white">
+          <button
+            className="bg-gray-700 text-sm py-2 px-3 rounded text-white"
+            onClick={() => reactNavigator("/")}
+          >
             Leave
           </button>
         </div>
       </aside>
 
       {/* Editor Section */}
-
       <Editor />
     </div>
   );

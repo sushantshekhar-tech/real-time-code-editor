@@ -49,7 +49,7 @@ const Editor = () => {
     } catch (error) {
       setOutput(error.toString());
     } finally {
-      console.log = log; // Restore the original console.log
+      console.log = log; // Restore the original console.log to the original file
     }
 
 
